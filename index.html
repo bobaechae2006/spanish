@@ -1,0 +1,2468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한-스페인어 스마트 번역기 | Traductor Coreano - Español</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Noto Sans KR -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 아이콘 로드 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans KR"', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        spainRed: '#AA151B',
+                        spainYellow: '#F1BF00',
+                        brand: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-amber-200 selection:text-slate-900">
+
+    <!-- 상단 내비게이션 바 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <!-- 스페인 테마 심볼 아이콘 -->
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-600 via-amber-400 to-red-600 flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-language text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                        <span>한-스페인어 번역기</span>
+                        <span class="hidden sm:inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">KO → ES</span>
+                    </h1>
+                </div>
+            </div>
+            
+            <!-- 모드 전환 내비게이션 탭 -->
+            <nav class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80" aria-label="모드 선택">
+                <button 
+                    id="tab-translator" 
+                    type="button"
+                    onclick="switchAppTab('translator')"
+                    class="px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white text-slate-900 shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                    <i class="fa-solid fa-arrow-right-arrow-left text-red-600 text-xs"></i>
+                    <span>번역기</span>
+                </button>
+                <button 
+                    id="tab-ai-chat" 
+                    type="button"
+                    onclick="switchAppTab('chat')"
+                    class="px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                    <i class="fa-solid fa-robot text-indigo-600 text-xs"></i>
+                    <span>AI 회화 연습</span>
+                    <span class="hidden md:inline-block text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-700">NEW</span>
+                </button>
+                <button 
+                    id="tab-vocab-game" 
+                    type="button"
+                    onclick="switchAppTab('game')"
+                    class="px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                    <i class="fa-solid fa-gamepad text-amber-500 text-xs"></i>
+                    <span>단어 게임</span>
+                </button>
+            </nav>
+
+            <div class="hidden lg:flex items-center space-x-3">
+                <span id="api-status" class="flex items-center text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                    실시간 번역 · AI 튜터 준비됨
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 영역: 1번 탭 (한국어 -> 스페인어 번역기) -->
+    <main id="translator-view" class="flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        
+        <!-- 언어 선택 헤더 바 -->
+        <div class="bg-white rounded-t-2xl border border-b-0 border-slate-200 px-4 sm:px-6 py-3.5 flex items-center justify-between shadow-sm">
+            <div class="flex items-center space-x-2.5 w-5/12">
+                <span class="text-xl" role="img" aria-label="대한민국 국기">🇰🇷</span>
+                <span class="font-semibold text-slate-800 text-sm sm:text-base">한국어</span>
+                <span class="text-xs text-slate-400 hidden sm:inline">(Coreano)</span>
+            </div>
+
+            <div class="flex justify-center w-2/12">
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                    <i class="fa-solid fa-arrow-right text-sm"></i>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-2.5 w-5/12">
+                <span class="text-xs text-slate-400 hidden sm:inline">(Español)</span>
+                <span class="font-semibold text-red-700 text-sm sm:text-base">스페인어</span>
+                <span class="text-xl" role="img" aria-label="스페인 국기">🇪🇸</span>
+            </div>
+        </div>
+
+        <!-- 번역 입력 및 출력 듀얼 패널 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 bg-white rounded-b-2xl border border-slate-200 shadow-lg overflow-hidden divide-y md:divide-y-0 md:divide-x divide-slate-200">
+            
+            <!-- 왼쪽: 한국어 입력 영역 -->
+            <div class="flex flex-col h-64 sm:h-80 p-4 sm:p-6 relative focus-within:bg-amber-50/10 transition-colors">
+                <textarea 
+                    id="source-text" 
+                    class="w-full flex-grow resize-none border-0 bg-transparent focus:ring-0 focus:outline-none text-slate-800 text-lg sm:text-xl leading-relaxed placeholder-slate-400"
+                    placeholder="번역할 한국어 문장이나 단어를 입력하세요..."
+                    maxlength="1000"
+                    spellcheck="false"
+                ></textarea>
+
+                <!-- 입력창 하단 컨트롤 바 -->
+                <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-2">
+                    <div class="flex items-center space-x-2">
+                        <!-- 지우기 버튼 -->
+                        <button 
+                            id="clear-btn" 
+                            type="button"
+                            title="입력 내용 지우기"
+                            class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center space-x-1 text-sm hidden"
+                        >
+                            <i class="fa-solid fa-xmark"></i>
+                            <span class="text-xs font-medium">지우기</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <!-- 글자 수 카운터 -->
+                        <span id="char-count" class="text-xs font-medium text-slate-400">0 / 1,000자</span>
+                        
+                        <!-- 즉시 번역 버튼 -->
+                        <button 
+                            id="translate-btn" 
+                            type="button"
+                            class="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-medium text-sm px-4 py-2 rounded-xl shadow-sm transition-all flex items-center space-x-1.5 cursor-pointer"
+                        >
+                            <span>번역하기</span>
+                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 스페인어 번역 결과 영역 -->
+            <div class="flex flex-col h-64 sm:h-80 p-4 sm:p-6 bg-slate-50/60 relative">
+                
+                <!-- 로딩 인디케이터 -->
+                <div id="loading-indicator" class="hidden absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex flex-col items-center justify-center">
+                    <div class="w-8 h-8 border-4 border-amber-400 border-t-red-600 rounded-full animate-spin mb-2"></div>
+                    <span class="text-xs font-medium text-slate-600">스페인어로 번역 중...</span>
+                </div>
+
+                <!-- 번역 결과 텍스트 -->
+                <div id="target-text-container" class="w-full flex-grow overflow-y-auto">
+                    <p id="target-text" class="text-slate-800 text-lg sm:text-xl leading-relaxed font-medium break-words whitespace-pre-wrap"></p>
+                    <p id="target-placeholder" class="text-slate-400 text-lg sm:text-xl leading-relaxed select-none">La traducción aparecerá aquí...</p>
+                </div>
+
+                <!-- 결과창 하단 컨트롤 바 -->
+                <div class="flex items-center justify-between pt-3 border-t border-slate-200/70 mt-2">
+                    <div class="flex items-center space-x-1.5">
+                        <!-- 스페인어 음성 듣기(TTS) 버튼 -->
+                        <button 
+                            id="speak-btn" 
+                            type="button"
+                            title="스페인어 원어민 발음 듣기"
+                            disabled
+                            class="p-2.5 text-slate-600 hover:text-red-700 hover:bg-amber-100/70 disabled:opacity-40 disabled:pointer-events-none rounded-xl transition-colors flex items-center space-x-1.5"
+                        >
+                            <i id="speak-icon" class="fa-solid fa-volume-high text-base"></i>
+                            <span class="text-xs font-semibold">발음 듣기</span>
+                        </button>
+
+                        <!-- 재생 속도 조절 토글 -->
+                        <button 
+                            id="speed-btn" 
+                            type="button"
+                            title="발음 재생 속도 변경 (보통 / 천천히)"
+                            disabled
+                            class="px-2 py-1 text-xs font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 disabled:opacity-40 disabled:pointer-events-none rounded-lg transition-colors"
+                        >
+                            1.0x
+                        </button>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <!-- 번역 결과 복사 버튼 -->
+                        <button 
+                            id="copy-btn" 
+                            type="button"
+                            title="번역 결과 복사하기"
+                            disabled
+                            class="px-3 py-2 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:pointer-events-none rounded-xl shadow-xs transition-all flex items-center space-x-1.5 text-xs font-semibold"
+                        >
+                            <i class="fa-regular fa-copy text-sm"></i>
+                            <span>복사</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 자주 쓰는 스페인어 인사말 & 여행 회화 예시 섹션 -->
+        <section class="mt-8 sm:mt-10">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-compass text-amber-500"></i>
+                        <span>자주 쓰는 여행 & 일상 회화 바로 번역</span>
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-0.5">문장을 클릭하면 자동으로 입력되어 스페인어 번역과 발음을 확인할 수 있습니다.</p>
+                </div>
+                
+                <!-- 카테고리 필터 탭 -->
+                <div class="flex space-x-1.5 bg-slate-200/70 p-1 rounded-xl self-start">
+                    <button type="button" data-category="all" class="category-tab active px-3 py-1 rounded-lg text-xs font-semibold bg-white text-slate-800 shadow-xs transition-all">전체</button>
+                    <button type="button" data-category="greeting" class="category-tab px-3 py-1 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-all">인사/기본</button>
+                    <button type="button" data-category="travel" class="category-tab px-3 py-1 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-all">식당/쇼핑</button>
+                    <button type="button" data-category="emergency" class="category-tab px-3 py-1 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-all">길찾기/긴급</button>
+                </div>
+            </div>
+
+            <!-- 회화 카드 그리드 -->
+            <div id="phrases-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <!-- JavaScript로 동적 렌더링 -->
+            </div>
+        </section>
+
+        <!-- 최근 번역 기록 섹션 -->
+        <section id="history-section" class="mt-8 sm:mt-10 hidden">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-slate-400"></i>
+                    <span>최근 번역 기록</span>
+                </h2>
+                <button id="clear-history-btn" type="button" class="text-xs text-slate-400 hover:text-red-600 transition-colors">
+                    기록 모두 삭제
+                </button>
+            </div>
+            <div id="history-list" class="space-y-2">
+                <!-- 최근 기록 아이템 동적 생성 -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 메인 컨텐츠 영역: 2번 탭 (AI 스페인어 회화 연습) -->
+    <main id="chat-view" class="hidden flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        
+        <!-- 상단 AI 튜터 설정 및 컨트롤 바 -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 mb-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                
+                <!-- 튜터 프로필 및 시나리오/난이도 선택 -->
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-sm shrink-0">
+                            <i class="fa-solid fa-graduation-cap text-base"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5">
+                                <span>AI 튜터 소피아 (Sofía)</span>
+                                <span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">원어민 튜터</span>
+                            </h2>
+                            <p class="text-xs text-slate-500">스페인어 타자 또는 마이크로 자유롭게 대화해보세요</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2 sm:ml-2">
+                        <!-- 상황별 롤플레이 시나리오 선택 -->
+                        <div class="relative">
+                            <select 
+                                id="scenario-select" 
+                                aria-label="회화 시나리오 선택"
+                                class="appearance-none bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 text-xs font-semibold rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors cursor-pointer"
+                            >
+                                <option value="free">💬 자유 대화 (Free Talk)</option>
+                                <option value="cafe">☕ 카페 / 식당 주문</option>
+                                <option value="airport">✈️ 공항 / 호텔 체크인</option>
+                                <option value="directions">🗺️ 길 묻기 / 대중교통</option>
+                                <option value="shopping">🛍️ 쇼핑 / 가격 흥정</option>
+                                <option value="friends">👋 친구 사귀기 / 일상 소개</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        </div>
+
+                        <!-- 학습자 난이도 선택 -->
+                        <div class="flex bg-slate-100 p-0.5 rounded-xl border border-slate-200/70">
+                            <button 
+                                type="button" 
+                                data-level="beginner" 
+                                class="level-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-700 shadow-xs transition-all cursor-pointer"
+                            >
+                                초급
+                            </button>
+                            <button 
+                                type="button" 
+                                data-level="intermediate" 
+                                class="level-btn px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-all cursor-pointer"
+                            >
+                                중급
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 우측 유틸리티 버튼: 자동 음성 재생 토글 & 대화 초기화 -->
+                <div class="flex items-center justify-between sm:justify-end gap-2.5 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                    <!-- 자동 음성 재생(TTS) 스위치 -->
+                    <label class="inline-flex items-center gap-2 cursor-pointer select-none bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/80 hover:bg-slate-100/70 transition-colors">
+                        <input type="checkbox" id="auto-tts-toggle" class="sr-only peer" checked>
+                        <div class="relative w-8 h-4.5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        <span class="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                            <i class="fa-solid fa-volume-high text-indigo-600 text-[11px]"></i>
+                            <span>자동 발음 듣기</span>
+                        </span>
+                    </label>
+
+                    <!-- 대화 초기화 버튼 -->
+                    <button 
+                        id="reset-chat-btn" 
+                        type="button"
+                        class="px-3 py-1.5 bg-white border border-slate-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 text-slate-600 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                        <i class="fa-solid fa-rotate-right text-[11px]"></i>
+                        <span>대화 초기화</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 채팅 메시지 컨테이너 -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-lg flex flex-col overflow-hidden h-[560px] sm:h-[600px]">
+            
+            <!-- 메시지 스크롤 영역 -->
+            <div id="chat-messages" class="flex-grow overflow-y-auto p-4 sm:p-6 space-y-5 bg-slate-50/50 scroll-smooth">
+                <!-- JavaScript로 AI 튜터 및 사용자 말풍선 렌더링 -->
+            </div>
+
+            <!-- 추천 답변 힌트 패널 (토글 표시) -->
+            <div id="hints-drawer" class="hidden bg-indigo-50/80 border-t border-indigo-100 px-4 py-3 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                        <span>추천 답변 힌트 (클릭하면 바로 입력됩니다)</span>
+                    </span>
+                    <button type="button" onclick="toggleHintsDrawer(false)" class="text-slate-400 hover:text-slate-700 text-xs p-1">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div id="hints-list" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <!-- 추천 답변 카드 동적 삽입 -->
+                </div>
+            </div>
+
+            <!-- 음성 인식 실시간 상태 배너 -->
+            <div id="stt-status-banner" class="hidden bg-red-50 border-t border-red-100 px-4 py-2 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                    </span>
+                    <span class="text-xs font-bold text-red-700">스페인어 음성 인식 중... 말씀해 주세요 (es-ES)</span>
+                    <span id="stt-interim-text" class="text-xs text-slate-600 italic truncate max-w-[200px] sm:max-w-md"></span>
+                </div>
+                <button type="button" id="stop-stt-btn" class="text-xs font-bold text-red-600 hover:text-red-800 underline cursor-pointer">
+                    중지
+                </button>
+            </div>
+
+            <!-- 하단 채팅 입력 및 음성/힌트 컨트롤 바 -->
+            <div class="bg-white border-t border-slate-200 p-3 sm:p-4">
+                <div class="flex items-end gap-2">
+                    <!-- 추천 답변 힌트 버튼 -->
+                    <button 
+                        id="hint-btn" 
+                        type="button"
+                        title="현재 대화에 어울리는 스페인어 답변 힌트 보기"
+                        class="p-3 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-800 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    >
+                        <i class="fa-solid fa-lightbulb text-amber-500 text-sm"></i>
+                        <span class="hidden sm:inline text-xs font-bold">힌트</span>
+                    </button>
+
+                    <!-- 음성 인식(STT) 마이크 버튼 -->
+                    <button 
+                        id="mic-btn" 
+                        type="button"
+                        title="마이크로 스페인어 말하기 (음성 인식)"
+                        class="p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 text-slate-600 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+                    >
+                        <i id="mic-icon" class="fa-solid fa-microphone text-base"></i>
+                    </button>
+
+                    <!-- 메시지 텍스트 입력창 -->
+                    <div class="flex-grow relative">
+                        <textarea 
+                            id="chat-input" 
+                            rows="1"
+                            placeholder="스페인어로 답변을 입력하세요... (모르는 단어는 한국어 혼용 가능)"
+                            class="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none px-3.5 py-2.5 text-sm text-slate-800 leading-relaxed max-h-28"
+                        ></textarea>
+                    </div>
+
+                    <!-- 전송 버튼 -->
+                    <button 
+                        id="send-chat-btn" 
+                        type="button"
+                        title="메시지 전송 (Enter)"
+                        class="px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-40 disabled:pointer-events-none text-white font-semibold text-sm shadow-sm transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    >
+                        <span class="hidden sm:inline">전송</span>
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </div>
+                <div class="flex items-center justify-between mt-2 px-1 text-[11px] text-slate-400">
+                    <span>Tip: <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">Enter</kbd> 전송 · <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">Shift + Enter</kbd> 줄바꿈</span>
+                    <span>스페인어로 말하면 AI가 자연스러운 표현으로 교정해줍니다</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 메인 컨텐츠 영역: 3번 탭 (스페인어 단어 퀴즈 게임 - Juego de Vocabulario) -->
+    <main id="game-view" class="hidden flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        
+        <!-- 게임 상단 설정 및 스코어보드 바 -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 mb-5">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                
+                <!-- 타이틀 및 출제 모드 / 카테고리 선택 -->
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-red-600 flex items-center justify-center text-white shadow-sm shrink-0">
+                            <i class="fa-solid fa-trophy text-base"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5">
+                                <span>스페인어 단어 퀴즈</span>
+                                <span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">4지선다</span>
+                            </h2>
+                            <p class="text-xs text-slate-500">한국어·스페인어 단어를 보고 알맞은 뜻을 고르세요</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2 sm:ml-2">
+                        <!-- 문제 출제 방향 선택 -->
+                        <div class="relative">
+                            <select 
+                                id="game-direction-select" 
+                                aria-label="문제 출제 방향 선택"
+                                class="appearance-none bg-slate-50 border border-slate-200 hover:border-amber-400 text-slate-700 text-xs font-semibold rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-colors cursor-pointer"
+                            >
+                                <option value="mixed">🔀 혼합 모드 (스페인어 ↔ 한국어)</option>
+                                <option value="es-to-ko">🇪🇸→🇰🇷 스페인어 → 한국어</option>
+                                <option value="ko-to-es">🇰🇷→🇪🇸 한국어 → 스페인어</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        </div>
+
+                        <!-- 단어 카테고리 선택 -->
+                        <div class="relative">
+                            <select 
+                                id="game-category-select" 
+                                aria-label="단어 카테고리 선택"
+                                class="appearance-none bg-slate-50 border border-slate-200 hover:border-amber-400 text-slate-700 text-xs font-semibold rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-colors cursor-pointer"
+                            >
+                                <option value="all">📚 전체 단어 (110+)</option>
+                                <option value="greeting">👋 인사 / 기본 표현</option>
+                                <option value="food">🥘 음식 / 카페</option>
+                                <option value="travel">✈️ 여행 / 교통 / 장소</option>
+                                <option value="shopping">🛍️ 쇼핑 / 숫자 / 시간</option>
+                                <option value="daily">🏃 일상 / 필수 동사·형용사</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 우측 상태 지표 및 새 게임 버튼 -->
+                <div class="flex items-center justify-between sm:justify-end gap-2.5 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                    <!-- 연속 정답 콤보 배지 -->
+                    <div id="game-combo-badge" class="hidden items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-100 text-amber-800 border border-amber-300 text-xs font-bold">
+                        <i class="fa-solid fa-fire text-orange-500"></i>
+                        <span id="game-combo-count">0</span><span>연속!</span>
+                    </div>
+
+                    <!-- 현재 점수 -->
+                    <div class="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <i class="fa-solid fa-star text-amber-500"></i>
+                        <span>점수: <span id="game-score" class="text-red-600">0</span>점</span>
+                    </div>
+
+                    <!-- 새 게임 버튼 -->
+                    <button 
+                        id="game-restart-btn" 
+                        type="button"
+                        class="px-3 py-1.5 bg-white border border-slate-200 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-800 text-slate-600 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                        <i class="fa-solid fa-rotate-right text-[11px]"></i>
+                        <span>새 게임</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 라운드 진행률 바 -->
+            <div class="mt-4 pt-3 border-t border-slate-100">
+                <div class="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1.5">
+                    <span id="game-mode-label" class="text-amber-700">표준 10문제 라운드</span>
+                    <span id="game-progress-text">1 / 10 문제</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="game-progress-bar" class="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-600 rounded-full transition-all duration-300" style="width: 10%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 퀴즈 플레이 카드 영역 -->
+        <div id="game-play-area" class="bg-white rounded-2xl border border-slate-200 shadow-lg p-5 sm:p-8">
+            
+            <!-- 문제 제시 카드 -->
+            <div class="bg-gradient-to-b from-slate-50 to-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 text-center mb-6 relative">
+                <!-- 출제 방향 배지 & 카테고리 태그 -->
+                <div class="flex items-center justify-center gap-2 mb-4">
+                    <span id="question-direction-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200">
+                        🇪🇸 스페인어 → 🇰🇷 한국어
+                    </span>
+                    <span id="question-category-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                        인사 / 기본
+                    </span>
+                </div>
+
+                <!-- 제시어 텍스트 -->
+                <div class="my-3">
+                    <h3 id="question-word" class="text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight break-keep">
+                        Buenos días
+                    </h3>
+                    <p id="question-sub-hint" class="text-xs sm:text-sm text-slate-400 mt-2">
+                        알맞은 한국어 뜻을 아래 4개 보기에서 선택하세요
+                    </p>
+                </div>
+
+                <!-- 스페인어 원어민 발음 듣기 컨트롤 -->
+                <div class="flex items-center justify-center gap-2 mt-5">
+                    <button 
+                        id="game-speak-btn" 
+                        type="button"
+                        class="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                        <i class="fa-solid fa-volume-high text-red-600"></i>
+                        <span id="game-speak-label">스페인어 발음 듣기</span>
+                    </button>
+                    <button 
+                        id="game-speak-slow-btn" 
+                        type="button"
+                        class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer"
+                        title="0.7배속으로 천천히 듣기"
+                    >
+                        <i class="fa-solid fa-turtle text-[11px]"></i>
+                        <span>느리게</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4지선다 객관식 보기 그리드 -->
+            <div id="game-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <!-- JavaScript로 4개의 보기 버튼 동적 렌더링 -->
+            </div>
+
+            <!-- 정답/오답 피드백 및 다음 문제 이동 바 -->
+            <div id="game-feedback-bar" class="hidden mt-6 p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all">
+                <div class="flex items-start sm:items-center gap-3">
+                    <div id="game-feedback-icon" class="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                        <p id="game-feedback-title" class="text-sm font-bold"></p>
+                        <p id="game-feedback-detail" class="text-xs mt-0.5"></p>
+                    </div>
+                </div>
+                <button 
+                    id="game-next-btn" 
+                    type="button"
+                    class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold shadow-xs transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                    <span id="game-next-btn-text">다음 문제</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+            </div>
+
+            <!-- 하단 키보드 단축키 안내 -->
+            <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                <span>Tip: 키보드 <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">1</kbd>~<kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">4</kbd> 키로 보기를 바로 선택할 수 있습니다</span>
+                <span><kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">Enter</kbd> / <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">Space</kbd> 다음 문제</span>
+            </div>
+        </div>
+
+        <!-- 라운드 종료 결과 요약 및 오답 복습 화면 -->
+        <div id="game-result-area" class="hidden bg-white rounded-2xl border border-slate-200 shadow-lg p-6 sm:p-8">
+            <div class="text-center max-w-lg mx-auto">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-red-600 text-white flex items-center justify-center text-3xl mx-auto mb-4 shadow-md">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900">퀴즈 라운드 완료!</h3>
+                <p id="result-encouragement" class="text-sm text-slate-500 mt-1">훌륭해요! 스페인어 어휘력이 쑥쑥 자라고 있어요.</p>
+
+                <!-- 결과 통계 카드 3종 -->
+                <div class="grid grid-cols-3 gap-3 my-6">
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
+                        <span class="text-xs font-medium text-slate-500 block">최종 점수</span>
+                        <span id="result-total-score" class="text-xl sm:text-2xl font-extrabold text-red-600 mt-1 block">0점</span>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
+                        <span class="text-xs font-medium text-slate-500 block">정답률</span>
+                        <span id="result-accuracy" class="text-xl sm:text-2xl font-extrabold text-emerald-600 mt-1 block">0%</span>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
+                        <span class="text-xs font-medium text-slate-500 block">최대 콤보</span>
+                        <span id="result-max-combo" class="text-xl sm:text-2xl font-extrabold text-amber-600 mt-1 block">0연속</span>
+                    </div>
+                </div>
+
+                <!-- 액션 버튼 그룹 -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button 
+                        id="retry-wrong-btn" 
+                        type="button"
+                        class="hidden w-full sm:w-auto px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                        <i class="fa-solid fa-repeat"></i>
+                        <span>틀린 단어만 다시 풀기 (<span id="wrong-count-label">0</span>개)</span>
+                    </button>
+                    <button 
+                        id="play-again-btn" 
+                        type="button"
+                        class="w-full sm:w-auto px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                        <i class="fa-solid fa-play"></i>
+                        <span>새 게임 시작하기</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 오답 노트 복습 리스트 -->
+            <div id="wrong-words-section" class="hidden mt-8 pt-6 border-t border-slate-200">
+                <h4 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2 mb-3">
+                    <i class="fa-solid fa-book-open text-red-500"></i>
+                    <span>이번 라운드 오답 노트 (발음을 들으며 복습해보세요)</span>
+                </h4>
+                <div id="wrong-words-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <!-- 틀린 단어 카드 동적 렌더링 -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 알림 토스트 메시지 (alert() 대체) -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-3 transition-all duration-300">
+        <div class="bg-slate-900 text-white text-xs sm:text-sm font-medium px-4 py-2.5 rounded-full shadow-xl flex items-center space-x-2">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span id="toast-message">클립보드에 복사되었습니다.</span>
+        </div>
+    </div>
+
+    <!-- 푸터 -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
+            <p>© 2026 한-스페인어 스마트 번역기 (Traductor Coreano-Español)</p>
+            <p>Google Neural Translation & Web Speech TTS 기반</p>
+        </div>
+    </footer>
+
+    <!-- 애플리케이션 스크립트 -->
+    <script>
+        /**
+         * 정확도 100% 보장을 위한 핵심 한국어-스페인어 내장 사전 (단어/짧은 인사말 오역 방지)
+         */
+        const BUILTIN_DICTIONARY = {
+            "안녕": "Hola",
+            "안녕하세요": "Hola / Buenos días",
+            "안녕하십니까": "Buenos días / Mucho gusto",
+            "잘 지냈어": "¿Cómo has estado?",
+            "잘 지냈어요": "¿Cómo ha estado?",
+            "감사합니다": "Gracias / Muchas gracias",
+            "고마워": "Gracias",
+            "고마워요": "Muchas gracias",
+            "죄송합니다": "Lo siento / Disculpe",
+            "미안해": "Lo siento / Perdón",
+            "미안해요": "Lo siento mucho",
+            "실례합니다": "Disculpe / Con permiso",
+            "네": "Sí",
+            "예": "Sí",
+            "아니요": "No",
+            "아니": "No",
+            "사랑해": "Te quiero / Te amo",
+            "사랑합니다": "Te amo",
+            "좋아해": "Me gustas",
+            "반갑습니다": "Mucho gusto / Encantado",
+            "만나서 반갑습니다": "Mucho gusto en conocerte",
+            "잘 가": "Adiós / Chao",
+            "안녕히 가세요": "Adiós / Que le vaya bien",
+            "안녕히 계세요": "Adiós / Cuídese",
+            "좋은 아침": "Buenos días",
+            "좋은 아침입니다": "Buenos días",
+            "잘 자": "Buenas noches",
+            "안녕히 주무세요": "Buenas noches",
+            "도와주세요": "¡Ayuda! / Por favor, ayúdeme",
+            "얼마예요": "¿Cuánto cuesta?",
+            "이거 얼마예요": "¿Cuánto cuesta esto?",
+            "화장실이 어디예요": "¿Dónde está el baño?",
+            "맛있어요": "¡Está delicioso! / ¡Qué rico!",
+            "계산서 주세요": "La cuenta, por favor",
+            "괜찮아요": "Está bien / No hay problema",
+            "모르겠어요": "No lo sé / No entiendo",
+            "이해했어요": "Entiendo"
+        };
+
+        /**
+         * 자주 쓰는 스페인어 여행/일상 회화 예시 데이터
+         */
+        const SAMPLE_PHRASES = [
+            { ko: "안녕하세요, 만나서 반갑습니다.", esHint: "Hola, mucho gusto en conocerte.", category: "greeting" },
+            { ko: "감사합니다. 좋은 하루 보내세요!", esHint: "Gracias. ¡Que tengas un buen día!", category: "greeting" },
+            { ko: "실례합니다, 영어 할 줄 아세요?", esHint: "Disculpe, ¿habla inglés?", category: "greeting" },
+            { ko: "이거 얼마예요? 조금 깎아주실 수 있나요?", esHint: "¿Cuánto cuesta esto? ¿Me puede hacer un descuento?", category: "travel" },
+            { ko: "추천해주실 만한 현지 음식이 있나요?", esHint: "¿Qué comida local me recomienda?", category: "travel" },
+            { ko: "계산서 좀 부탁드립니다. 카드로 결제할게요.", esHint: "La cuenta, por favor. Voy a pagar con tarjeta.", category: "travel" },
+            { ko: "가장 가까운 지하철역이 어디인가요?", esHint: "¿Dónde está la estación de metro más cercana?", category: "emergency" },
+            { ko: "화장실이 어디에 있는지 알려주세요.", esHint: "¿Dónde está el baño, por favor?", category: "emergency" },
+            { ko: "도와주세요! 여권을 잃어버렸어요.", esHint: "¡Ayuda! Perdí mi pasaporte.", category: "emergency" }
+        ];
+
+        // DOM 요소 참조
+        const sourceTextEl = document.getElementById('source-text');
+        const targetTextEl = document.getElementById('target-text');
+        const targetPlaceholderEl = document.getElementById('target-placeholder');
+        const charCountEl = document.getElementById('char-count');
+        const clearBtn = document.getElementById('clear-btn');
+        const translateBtn = document.getElementById('translate-btn');
+        const speakBtn = document.getElementById('speak-btn');
+        const speakIcon = document.getElementById('speak-icon');
+        const speedBtn = document.getElementById('speed-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const phrasesGrid = document.getElementById('phrases-grid');
+        const categoryTabs = document.querySelectorAll('.category-tab');
+        const historySection = document.getElementById('history-section');
+        const historyList = document.getElementById('history-list');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+
+        // 상태 변수 및 localStorage 로드
+        const HISTORY_STORAGE_KEY = 'ko_es_translation_history_v1';
+        let debounceTimer = null;
+        let currentTranslatedText = '';
+        let speechRate = 1.0; // 1.0x 또는 0.7x (천천히 듣기)
+        let translationHistory = loadHistoryFromStorage();
+        let abortController = null;
+
+        /**
+         * localStorage에서 최근 번역 기록 불러오기
+         */
+        function loadHistoryFromStorage() {
+            try {
+                const saved = localStorage.getItem(HISTORY_STORAGE_KEY);
+                return saved ? JSON.parse(saved) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        /**
+         * localStorage에 최근 번역 기록 저장
+         */
+        function saveHistoryToStorage() {
+            try {
+                localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(translationHistory));
+            } catch (e) {
+                // 스토리지 용량 초과 등 예외 무시
+            }
+        }
+
+        /**
+         * 토스트 알림 표시 함수 (alert() 대체)
+         */
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.textContent = message;
+            if (type === 'error') {
+                toastIcon.className = 'fa-solid fa-circle-exclamation text-red-400';
+            } else if (type === 'info') {
+                toastIcon.className = 'fa-solid fa-volume-high text-amber-400';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400';
+            }
+
+            toast.classList.remove('opacity-0', 'translate-y-3');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-3');
+            }, 2500);
+        }
+
+        /**
+         * 입력 텍스트 정규화 (내장 사전 매칭용: 끝의 마침표/느낌표/물음표 제거)
+         */
+        function normalizeKey(text) {
+            return text.trim().replace(/[.!?~]+$/g, '').trim();
+        }
+
+        /**
+         * Google Translate 공개 엔드포인트 + 내장 정확도 검증 사전을 결합한 한국어 -> 스페인어 번역 함수
+         */
+        async function translateKoreanToSpanish(text) {
+            const trimmed = text.trim();
+            if (!trimmed) {
+                resetOutput();
+                return;
+            }
+
+            // 이전 진행 중인 요청이 있다면 취소
+            if (abortController) {
+                abortController.abort();
+            }
+
+            // 1단계: 내장 핵심 인사말/회화 사전 우선 확인 (단독 단어 오역 및 로마자 표기 원천 차단)
+            const normalized = normalizeKey(trimmed);
+            if (BUILTIN_DICTIONARY[normalized]) {
+                const exactMatch = BUILTIN_DICTIONARY[normalized];
+                updateOutput(exactMatch);
+                addToHistory(trimmed, exactMatch);
+                loadingIndicator.classList.add('hidden');
+                return;
+            }
+
+            abortController = new AbortController();
+            loadingIndicator.classList.remove('hidden');
+
+            try {
+                // 2단계: Google Translate 신경망 번역 엔드포인트 호출 (CORS 지원)
+                const encodedText = encodeURIComponent(trimmed);
+                const apiUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=es&dt=t&q=${encodedText}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    signal: abortController.signal
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP 오류: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Google Translate 응답 배열 파싱: data[0]에 문장 조각별 [번역문, 원문] 배열이 들어있음
+                if (Array.isArray(data) && Array.isArray(data[0])) {
+                    const translatedSegments = data[0]
+                        .filter(segment => Array.isArray(segment) && segment[0])
+                        .map(segment => segment[0]);
+
+                    const fullTranslation = translatedSegments.join('').trim();
+
+                    if (fullTranslation) {
+                        updateOutput(fullTranslation);
+                        addToHistory(trimmed, fullTranslation);
+                    } else {
+                        throw new Error('빈 번역 결과가 반환되었습니다.');
+                    }
+                } else {
+                    throw new Error('번역 데이터 형식이 올바르지 않습니다.');
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    // 사용자가 계속 타이핑하여 취소된 요청은 무시
+                    return;
+                }
+                console.error('Translation error:', error);
+                
+                // 네트워크 오류 시 내장 사전 재확인 폴백
+                if (BUILTIN_DICTIONARY[normalized]) {
+                    updateOutput(BUILTIN_DICTIONARY[normalized]);
+                } else {
+                    showToast('번역 서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.', 'error');
+                }
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        /**
+         * API 응답에 포함될 수 있는 HTML 엔티티(&quot;, &#39; 등)를 일반 문자로 변환
+         */
+        function decodeHtmlEntities(str) {
+            const txt = document.createElement('textarea');
+            txt.innerHTML = str;
+            return txt.value;
+        }
+
+        /**
+         * 번역 결과 UI 업데이트
+         */
+        function updateOutput(translatedText) {
+            currentTranslatedText = translatedText;
+            targetPlaceholderEl.classList.add('hidden');
+            targetTextEl.textContent = translatedText;
+
+            // 액션 버튼 활성화
+            speakBtn.disabled = false;
+            speedBtn.disabled = false;
+            copyBtn.disabled = false;
+        }
+
+        /**
+         * 번역 결과 UI 초기화
+         */
+        function resetOutput() {
+            currentTranslatedText = '';
+            targetTextEl.textContent = '';
+            targetPlaceholderEl.classList.remove('hidden');
+            loadingIndicator.classList.add('hidden');
+
+            // 액션 버튼 비활성화
+            speakBtn.disabled = true;
+            speedBtn.disabled = true;
+            copyBtn.disabled = true;
+
+            // 재생 중인 음성 중지
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        /**
+         * Web Speech API를 이용한 스페인어 발음 듣기 (TTS)
+         */
+        function speakSpanish(text) {
+            if (!text) return;
+
+            if (!('speechSynthesis' in window)) {
+                showToast('현재 브라우저에서는 음성 듣기 기능을 지원하지 않습니다.', 'error');
+                return;
+            }
+
+            // 기존 재생 중인 음성 중지
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES'; // 스페인어 설정
+            utterance.rate = speechRate; // 재생 속도 (1.0 또는 0.7)
+            utterance.pitch = 1.0;
+
+            // 사용 가능한 스페인어 음성 선택 (es-ES 또는 es-MX 등)
+            const voices = window.speechSynthesis.getVoices();
+            const spanishVoice = voices.find(v => v.lang === 'es-ES') || voices.find(v => v.lang.startsWith('es'));
+            if (spanishVoice) {
+                utterance.voice = spanishVoice;
+            }
+
+            // 재생 상태 시각적 피드백
+            utterance.onstart = () => {
+                speakIcon.classList.remove('fa-volume-high');
+                speakIcon.classList.add('fa-waveform-lines', 'animate-pulse', 'text-red-600');
+                speakBtn.classList.add('bg-amber-100', 'text-red-700');
+            };
+
+            utterance.onend = () => {
+                speakIcon.classList.remove('fa-waveform-lines', 'animate-pulse', 'text-red-600');
+                speakIcon.classList.add('fa-volume-high');
+                speakBtn.classList.remove('bg-amber-100', 'text-red-700');
+            };
+
+            utterance.onerror = () => {
+                speakIcon.classList.remove('fa-waveform-lines', 'animate-pulse', 'text-red-600');
+                speakIcon.classList.add('fa-volume-high');
+                speakBtn.classList.remove('bg-amber-100', 'text-red-700');
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        /**
+         * 클립보드 복사 함수 (iFrame 호환성 고려 document.execCommand 사용)
+         */
+        function copyToClipboard(text) {
+            if (!text) return;
+
+            const tempTextarea = document.createElement('textarea');
+            tempTextarea.value = text;
+            tempTextarea.style.position = 'fixed';
+            tempTextarea.style.left = '-9999px';
+            document.body.appendChild(tempTextarea);
+            tempTextarea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('스페인어 번역 결과가 복사되었습니다!');
+                } else {
+                    showToast('복사에 실패했습니다. 직접 선택해 복사해주세요.', 'error');
+                }
+            } catch (err) {
+                showToast('복사 중 오류가 발생했습니다.', 'error');
+            } finally {
+                document.body.removeChild(tempTextarea);
+            }
+        }
+
+        /**
+         * 최근 번역 기록 추가 및 렌더링 (localStorage 영구 저장)
+         */
+        function addToHistory(ko, es) {
+            // 동일한 항목이 이미 맨 위에 있으면 중복 추가 방지
+            if (translationHistory.length > 0 && translationHistory[0].ko === ko && translationHistory[0].es === es) {
+                return;
+            }
+
+            // 기존 중복 항목 제거 후 최상단에 추가
+            translationHistory = translationHistory.filter(item => item.ko !== ko);
+            translationHistory.unshift({ ko, es });
+
+            // 최대 8개까지만 유지
+            if (translationHistory.length > 8) {
+                translationHistory.pop();
+            }
+
+            saveHistoryToStorage();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (translationHistory.length === 0) {
+                historySection.classList.add('hidden');
+                return;
+            }
+
+            historySection.classList.remove('hidden');
+            historyList.innerHTML = translationHistory.map((item, index) => `
+                <div class="bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:border-amber-300 transition-colors">
+                    <div class="space-y-1 cursor-pointer flex-grow" onclick="loadFromHistory(${index})">
+                        <p class="text-xs text-slate-500">${escapeHtml(item.ko)}</p>
+                        <p class="text-sm font-semibold text-slate-800">${escapeHtml(item.es)}</p>
+                    </div>
+                    <div class="flex items-center space-x-1.5 self-end sm:self-center shrink-0">
+                        <button type="button" onclick="speakSpanish('${escapeJsString(item.es)}')" title="발음 듣기" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                            <i class="fa-solid fa-volume-high text-xs"></i>
+                        </button>
+                        <button type="button" onclick="copyToClipboard('${escapeJsString(item.es)}')" title="복사하기" class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
+                            <i class="fa-regular fa-copy text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadFromHistory(index) {
+            const item = translationHistory[index];
+            if (!item) return;
+            sourceTextEl.value = item.ko;
+            updateCharCount();
+            updateOutput(item.es);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /**
+         * 회화 예시 카드 렌더링
+         */
+        function renderSamplePhrases(category = 'all') {
+            const filtered = category === 'all' 
+                ? SAMPLE_PHRASES 
+                : SAMPLE_PHRASES.filter(p => p.category === category);
+
+            phrasesGrid.innerHTML = filtered.map(phrase => `
+                <button 
+                    type="button" 
+                    onclick="selectSamplePhrase('${escapeJsString(phrase.ko)}')"
+                    class="text-left bg-white border border-slate-200 hover:border-amber-400 hover:shadow-md rounded-xl p-4 transition-all group flex flex-col justify-between"
+                >
+                    <p class="text-sm font-semibold text-slate-800 group-hover:text-red-700 transition-colors mb-1.5">
+                        ${escapeHtml(phrase.ko)}
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-slate-400">
+                        <span class="truncate pr-2">${escapeHtml(phrase.esHint)}</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-0 group-hover:opacity-100 text-amber-500 transition-opacity"></i>
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function selectSamplePhrase(koText) {
+            sourceTextEl.value = koText;
+            updateCharCount();
+            translateKoreanToSpanish(koText);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /**
+         * 글자 수 표시 및 지우기 버튼 상태 업데이트
+         */
+        function updateCharCount() {
+            const length = sourceTextEl.value.length;
+            charCountEl.textContent = `${length.toLocaleString()} / 1,000자`;
+
+            if (length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+        }
+
+        // XSS 방지용 이스케이프 유틸리티
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, match => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[match]));
+        }
+
+        function escapeJsString(str) {
+            return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        // ================= 이벤트 리스너 설정 =================
+
+        // 실시간 입력 디바운싱 (타이핑 멈춘 후 500ms 뒤 자동 번역)
+        sourceTextEl.addEventListener('input', () => {
+            updateCharCount();
+            clearTimeout(debounceTimer);
+
+            const text = sourceTextEl.value;
+            if (!text.trim()) {
+                resetOutput();
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                translateKoreanToSpanish(text);
+            }, 500);
+        });
+
+        // Enter 키 입력 시 즉시 번역 (Shift+Enter는 줄바꿈)
+        sourceTextEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                clearTimeout(debounceTimer);
+                translateKoreanToSpanish(sourceTextEl.value);
+            }
+        });
+
+        // 번역하기 버튼 클릭
+        translateBtn.addEventListener('click', () => {
+            clearTimeout(debounceTimer);
+            if (!sourceTextEl.value.trim()) {
+                showToast('번역할 한국어 내용을 먼저 입력해주세요.', 'info');
+                sourceTextEl.focus();
+                return;
+            }
+            translateKoreanToSpanish(sourceTextEl.value);
+        });
+
+        // 지우기 버튼 클릭
+        clearBtn.addEventListener('click', () => {
+            sourceTextEl.value = '';
+            updateCharCount();
+            resetOutput();
+            sourceTextEl.focus();
+        });
+
+        // 스페인어 발음 듣기 버튼 클릭
+        speakBtn.addEventListener('click', () => {
+            speakSpanish(currentTranslatedText);
+        });
+
+        // 재생 속도 토글 (1.0x <-> 0.7x)
+        speedBtn.addEventListener('click', () => {
+            if (speechRate === 1.0) {
+                speechRate = 0.7;
+                speedBtn.textContent = '0.7x (느리게)';
+                speedBtn.classList.add('bg-amber-100', 'text-amber-900');
+                showToast('발음 재생 속도를 느리게(0.7x) 설정했습니다.', 'info');
+            } else {
+                speechRate = 1.0;
+                speedBtn.textContent = '1.0x';
+                speedBtn.classList.remove('bg-amber-100', 'text-amber-900');
+                showToast('발음 재생 속도를 보통(1.0x)으로 설정했습니다.', 'info');
+            }
+        });
+
+        // 복사 버튼 클릭
+        copyBtn.addEventListener('click', () => {
+            copyToClipboard(currentTranslatedText);
+        });
+
+        // 회화 예시 카테고리 필터 탭 클릭
+        categoryTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                categoryTabs.forEach(t => {
+                    t.classList.remove('bg-white', 'text-slate-800', 'shadow-xs', 'font-semibold');
+                    t.classList.add('text-slate-600', 'font-medium');
+                });
+                tab.classList.add('bg-white', 'text-slate-800', 'shadow-xs', 'font-semibold');
+                tab.classList.remove('text-slate-600', 'font-medium');
+
+                renderSamplePhrases(tab.dataset.category);
+            });
+        });
+
+        // 최근 기록 모두 삭제
+        clearHistoryBtn.addEventListener('click', () => {
+            translationHistory = [];
+            saveHistoryToStorage();
+            renderHistory();
+            showToast('최근 번역 기록이 삭제되었습니다.');
+        });
+
+        // 브라우저 음성 목록 비동기 로드 대비 초기화
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
+        }
+
+        // 초기 렌더링 실행
+        window.addEventListener('DOMContentLoaded', () => {
+            renderSamplePhrases('all');
+            renderHistory();
+            initAiTutorChat();
+            initVocabGame();
+        });
+
+        // =========================================================================
+        // [2번 탭] AI 스페인어 회화 연습 (Gemini API + Web Speech STT/TTS) 로직
+        // =========================================================================
+
+        const SCENARIO_CONFIG = {
+            free: {
+                title: "자유 대화 (Free Talk)",
+                openingEs: "¡Hola! Soy Sofía, tu tutora de español. ¿De qué te gustaría hablar hoy?",
+                openingKo: "안녕! 나는 너의 스페인어 튜터 소피아야. 오늘 어떤 주제로 이야기해 볼까?",
+                defaultHints: [
+                    { es: "¡Hola Sofía! Mucho gusto. ¿Cómo estás?", ko: "안녕 소피아! 만나서 반가워. 어떻게 지내?" },
+                    { es: "Quiero practicar conversación básica en español.", ko: "스페인어 기초 회화를 연습하고 싶어요." },
+                    { es: "Hoy hace muy buen tiempo en Corea.", ko: "오늘 한국은 날씨가 정말 좋아요." }
+                ]
+            },
+            cafe: {
+                title: "카페 / 식당 주문",
+                openingEs: "¡Bienvenido a Café Madrid! ¿Qué le gustaría tomar o comer hoy?",
+                openingKo: "카페 마드리드에 오신 것을 환영합니다! 오늘 무엇을 마시거나 드시겠어요?",
+                defaultHints: [
+                    { es: "Hola, quisiera un café con leche, por favor.", ko: "안녕하세요, 카페라떼 한 잔 주세요." },
+                    { es: "¿Qué tapas me recomienda hoy?", ko: "오늘 어떤 타파스를 추천해 주시나요?" },
+                    { es: "Para llevar, por favor. ¿Cuánto es?", ko: "포장으로 부탁드립니다. 얼마인가요?" }
+                ]
+            },
+            airport: {
+                title: "공항 / 호텔 체크인",
+                openingEs: "¡Buenas tardes! Bienvenido al Hotel Sol. ¿Tiene una reserva a su nombre?",
+                openingKo: "안녕하세요! 솔 호텔에 오신 것을 환영합니다. 성함으로 된 예약이 있으신가요?",
+                defaultHints: [
+                    { es: "Sí, tengo una reserva por tres noches.", ko: "네, 3박 예약이 되어 있습니다." },
+                    { es: "¿A qué hora es el desayuno mañana?", ko: "내일 아침 식사는 몇 시부터인가요?" },
+                    { es: "¿Cuál es la contraseña del Wi-Fi?", ko: "와이파이 비밀번호가 무엇인가요?" }
+                ]
+            },
+            directions: {
+                title: "길 묻기 / 대중교통",
+                openingEs: "¡Hola! Parece que buscas algo. ¿Te puedo ayudar a encontrar algún lugar?",
+                openingKo: "안녕! 무언가를 찾고 있는 것 같네. 어떤 장소를 찾는 걸 도와줄까?",
+                defaultHints: [
+                    { es: "Disculpe, ¿dónde está la estación de metro más cercana?", ko: "실례합니다, 가장 가까운 지하철역이 어디인가요?" },
+                    { es: "¿Cómo puedo llegar al Museo del Prado?", ko: "프라도 미술관에 어떻게 갈 수 있나요?" },
+                    { es: "¿Está lejos para ir caminando?", ko: "걸어가기에 먼 거리인가요?" }
+                ]
+            },
+            shopping: {
+                title: "쇼핑 / 가격 흥정",
+                openingEs: "¡Hola! Bienvenido a nuestra tienda. ¿Busca algún recuerdo o ropa en especial?",
+                openingKo: "안녕하세요! 저희 가게에 오신 걸 환영해요. 특별히 찾으시는 기념품이나 옷이 있나요?",
+                defaultHints: [
+                    { es: "¿Cuánto cuesta esta camiseta?", ko: "이 티셔츠는 얼마인가요?" },
+                    { es: "¿Tiene una talla más grande, por favor?", ko: "더 큰 사이즈가 있을까요?" },
+                    { es: "¿Puedo pagar con tarjeta de crédito?", ko: "신용카드로 결제할 수 있나요?" }
+                ]
+            },
+            friends: {
+                title: "친구 사귀기 / 일상 소개",
+                openingEs: "¡Hola! Soy de España y me encanta la cultura coreana. ¿De dónde eres y qué te gusta hacer?",
+                openingKo: "안녕! 난 스페인에서 왔고 한국 문화를 정말 좋아해. 넌 어디서 왔고 뭘 하는 걸 좋아하니?",
+                defaultHints: [
+                    { es: "¡Qué genial! Soy de Seúl y me gusta viajar.", ko: "멋지다! 난 서울에서 왔고 여행하는 걸 좋아해." },
+                    { es: "Me encanta la comida española, sobre todo la paella.", ko: "난 스페인 음식을 좋아해, 특히 빠에야!" },
+                    { es: "¿Cuánto tiempo llevas estudiando idiomas?", ko: "언어 공부를 한 지 얼마나 되었어?" }
+                ]
+            }
+        };
+
+        // 채팅 상태 변수
+        let currentScenario = 'free';
+        let currentLevel = 'beginner';
+        let chatConversation = []; // Gemini API 문맥 유지를 위한 히스토리
+        let currentHints = [];
+        let isChatLoading = false;
+        let recognition = null;
+        let isRecording = false;
+
+        // 채팅 DOM 요소
+        const translatorView = document.getElementById('translator-view');
+        const chatView = document.getElementById('chat-view');
+        const gameView = document.getElementById('game-view');
+        const tabTranslatorBtn = document.getElementById('tab-translator');
+        const tabAiChatBtn = document.getElementById('tab-ai-chat');
+        const tabVocabGameBtn = document.getElementById('tab-vocab-game');
+        const scenarioSelect = document.getElementById('scenario-select');
+        const levelBtns = document.querySelectorAll('.level-btn');
+        const autoTtsToggle = document.getElementById('auto-tts-toggle');
+        const resetChatBtn = document.getElementById('reset-chat-btn');
+        const chatMessagesEl = document.getElementById('chat-messages');
+        const chatInputEl = document.getElementById('chat-input');
+        const sendChatBtn = document.getElementById('send-chat-btn');
+        const micBtn = document.getElementById('mic-btn');
+        const micIcon = document.getElementById('mic-icon');
+        const sttStatusBanner = document.getElementById('stt-status-banner');
+        const sttInterimText = document.getElementById('stt-interim-text');
+        const stopSttBtn = document.getElementById('stop-stt-btn');
+        const hintBtn = document.getElementById('hint-btn');
+        const hintsDrawer = document.getElementById('hints-drawer');
+        const hintsListEl = document.getElementById('hints-list');
+
+        /**
+         * 상단 탭 전환 (번역기 <-> AI 회화 연습 <-> 단어 게임)
+         */
+        function switchAppTab(tabName) {
+            // 모든 뷰 숨김 및 탭 비활성화 초기화
+            translatorView.classList.add('hidden');
+            chatView.classList.add('hidden');
+            gameView.classList.add('hidden');
+
+            [tabTranslatorBtn, tabAiChatBtn, tabVocabGameBtn].forEach(btn => {
+                btn.classList.remove('bg-white', 'text-slate-900', 'shadow-xs', 'font-bold');
+                btn.classList.add('text-slate-600', 'font-medium');
+            });
+
+            // 다른 탭으로 이동 시 음성 인식 중이면 중지
+            if (tabName !== 'chat' && isRecording && recognition) {
+                recognition.stop();
+            }
+
+            if (tabName === 'translator') {
+                translatorView.classList.remove('hidden');
+                tabTranslatorBtn.classList.add('bg-white', 'text-slate-900', 'shadow-xs', 'font-bold');
+                tabTranslatorBtn.classList.remove('text-slate-600', 'font-medium');
+            } else if (tabName === 'chat') {
+                chatView.classList.remove('hidden');
+                tabAiChatBtn.classList.add('bg-white', 'text-slate-900', 'shadow-xs', 'font-bold');
+                tabAiChatBtn.classList.remove('text-slate-600', 'font-medium');
+                chatInputEl.focus();
+            } else if (tabName === 'game') {
+                gameView.classList.remove('hidden');
+                tabVocabGameBtn.classList.add('bg-white', 'text-slate-900', 'shadow-xs', 'font-bold');
+                tabVocabGameBtn.classList.remove('text-slate-600', 'font-medium');
+            }
+        }
+
+        /**
+         * AI 회화 세션 초기화 및 첫 인사말 렌더링
+         */
+        function startNewChatSession(speakGreeting = false) {
+            const config = SCENARIO_CONFIG[currentScenario] || SCENARIO_CONFIG.free;
+            chatConversation = [];
+            chatMessagesEl.innerHTML = '';
+            currentHints = [...config.defaultHints];
+            renderHints();
+            toggleHintsDrawer(false);
+
+            const initialAiData = {
+                spanishReply: config.openingEs,
+                koreanTranslation: config.openingKo,
+                correctionTip: "",
+                suggestedReplies: config.defaultHints
+            };
+
+            chatConversation.push({
+                role: 'model',
+                parts: [{ text: JSON.stringify(initialAiData) }]
+            });
+
+            appendAiMessageBubble(initialAiData);
+
+            if (speakGreeting && autoTtsToggle.checked) {
+                speakSpanish(initialAiData.spanishReply);
+            }
+        }
+
+        /**
+         * AI 튜터 말풍선 렌더링 (한국어 해석 토글, 보통/느리게 TTS 버튼, 교정 팁 포함)
+         */
+        function appendAiMessageBubble(data) {
+            const msgId = 'ai-msg-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6);
+            const hasCorrection = data.correctionTip && data.correctionTip.trim().length > 0;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex items-start gap-3 max-w-3xl animate-[fadeIn_0.25s_ease-out]';
+            wrapper.innerHTML = `
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white text-xs font-bold shadow-xs shrink-0 mt-0.5">
+                    ES
+                </div>
+                <div class="flex flex-col space-y-2 flex-grow min-w-0">
+                    <div class="bg-white border border-slate-200/90 rounded-2xl rounded-tl-sm p-4 shadow-xs">
+                        <!-- 스페인어 원문 답변 -->
+                        <p class="text-slate-900 text-sm sm:text-base font-semibold leading-relaxed break-words">
+                            ${escapeHtml(data.spanishReply)}
+                        </p>
+
+                        <!-- 한국어 해석 (기본 숨김, 버튼으로 토글) -->
+                        <div id="${msgId}-ko" class="hidden mt-2.5 pt-2.5 border-t border-slate-100 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                            <span class="inline-block text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded mr-1">해석</span>
+                            ${escapeHtml(data.koreanTranslation)}
+                        </div>
+
+                        <!-- 말풍선 하단 컨트롤: 발음 듣기(보통/느리게) + 한국어 해석 토글 -->
+                        <div class="flex flex-wrap items-center gap-2 mt-3 pt-2.5 border-t border-slate-100">
+                            <button 
+                                type="button" 
+                                onclick="speakSpanishWithRate('${escapeJsString(data.spanishReply)}', 1.0)"
+                                class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                            >
+                                <i class="fa-solid fa-volume-high text-[11px]"></i>
+                                <span>발음 듣기</span>
+                            </button>
+                            <button 
+                                type="button" 
+                                onclick="speakSpanishWithRate('${escapeJsString(data.spanishReply)}', 0.7)"
+                                class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                                title="0.7배속으로 천천히 듣기"
+                            >
+                                <i class="fa-solid fa-turtle text-[11px]"></i>
+                                <span>느리게</span>
+                            </button>
+                            <button 
+                                type="button" 
+                                onclick="toggleMessageTranslation('${msgId}-ko', this)"
+                                class="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-amber-50 border border-slate-200/80 hover:border-amber-200 text-slate-600 hover:text-amber-800 text-xs font-medium transition-colors flex items-center gap-1 ml-auto cursor-pointer"
+                            >
+                                <i class="fa-solid fa-language text-[11px]"></i>
+                                <span>해석 보기</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 문법 교정 및 자연스러운 표현 팁 카드 (있을 경우에만 표시) -->
+                    ${hasCorrection ? `
+                        <div class="bg-emerald-50/90 border border-emerald-200/80 rounded-xl px-3.5 py-2.5 text-xs text-emerald-900 leading-relaxed flex items-start gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-emerald-600 mt-0.5 shrink-0"></i>
+                            <div>
+                                <span class="font-bold text-emerald-800 block mb-0.5">[교정 및 표현 팁]</span>
+                                <span>${escapeHtml(data.correctionTip)}</span>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            chatMessagesEl.appendChild(wrapper);
+            scrollToBottomOfChat();
+        }
+
+        /**
+         * 사용자 메시지 말풍선 렌더링
+         */
+        function appendUserMessageBubble(text) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex items-end justify-end gap-2.5 ml-auto max-w-2xl';
+            wrapper.innerHTML = `
+                <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-xs">
+                    <p class="text-sm sm:text-base leading-relaxed break-words whitespace-pre-wrap">${escapeHtml(text)}</p>
+                </div>
+            `;
+            chatMessagesEl.appendChild(wrapper);
+            scrollToBottomOfChat();
+        }
+
+        /**
+         * AI 타이핑 로딩 인디케이터 표시/제거
+         */
+        function showAiTypingIndicator() {
+            removeAiTypingIndicator();
+            const loader = document.createElement('div');
+            loader.id = 'ai-typing-indicator';
+            loader.className = 'flex items-start gap-3 max-w-md';
+            loader.innerHTML = `
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white text-xs font-bold shadow-xs shrink-0">
+                    ES
+                </div>
+                <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3.5 shadow-xs flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style="animation-delay: 0ms"></span>
+                    <span class="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style="animation-delay: 150ms"></span>
+                    <span class="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style="animation-delay: 300ms"></span>
+                    <span class="text-xs text-slate-400 ml-1.5 font-medium">소피아가 답변을 작성 중...</span>
+                </div>
+            `;
+            chatMessagesEl.appendChild(loader);
+            scrollToBottomOfChat();
+        }
+
+        function removeAiTypingIndicator() {
+            const existing = document.getElementById('ai-typing-indicator');
+            if (existing) existing.remove();
+        }
+
+        function scrollToBottomOfChat() {
+            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+        }
+
+        /**
+         * 개별 AI 메시지 한국어 해석 토글
+         */
+        function toggleMessageTranslation(targetId, btnEl) {
+            const el = document.getElementById(targetId);
+            if (!el) return;
+            const isHidden = el.classList.contains('hidden');
+            if (isHidden) {
+                el.classList.remove('hidden');
+                btnEl.innerHTML = '<i class="fa-solid fa-eye-slash text-[11px]"></i><span>해석 숨기기</span>';
+            } else {
+                el.classList.add('hidden');
+                btnEl.innerHTML = '<i class="fa-solid fa-language text-[11px]"></i><span>해석 보기</span>';
+            }
+        }
+
+        /**
+         * 지정 배속으로 스페인어 TTS 실행 (회화 말풍선용)
+         */
+        function speakSpanishWithRate(text, rate = 1.0) {
+            if (!text) return;
+            if (!('speechSynthesis' in window)) {
+                showToast('현재 브라우저에서는 음성 듣기 기능을 지원하지 않습니다.', 'error');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES';
+            utterance.rate = rate;
+            const voices = window.speechSynthesis.getVoices();
+            const spanishVoice = voices.find(v => v.lang === 'es-ES') || voices.find(v => v.lang.startsWith('es'));
+            if (spanishVoice) utterance.voice = spanishVoice;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        /**
+         * 지수 백오프를 포함한 Gemini API 호출 함수
+         */
+        async function fetchGeminiWithRetry(url, payload, maxRetries = 3) {
+            let delay = 1000;
+            for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (err) {
+                    if (attempt === maxRetries) throw err;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        /**
+         * 사용자 메시지 전송 및 Gemini AI 튜터 응답 처리
+         */
+        async function sendChatMessage(overrideText = null) {
+            if (isChatLoading) return;
+
+            const rawText = overrideText !== null ? overrideText : chatInputEl.value;
+            const userText = rawText.trim();
+            if (!userText) return;
+
+            // 음성 인식 중이면 종료
+            if (isRecording && recognition) {
+                recognition.stop();
+            }
+
+            // UI 업데이트
+            chatInputEl.value = '';
+            chatInputEl.style.height = 'auto';
+            toggleHintsDrawer(false);
+            appendUserMessageBubble(userText);
+
+            // 대화 히스토리에 사용자 턴 추가
+            chatConversation.push({
+                role: 'user',
+                parts: [{ text: userText }]
+            });
+
+            isChatLoading = true;
+            sendChatBtn.disabled = true;
+            showAiTypingIndicator();
+
+            const scenarioLabel = SCENARIO_CONFIG[currentScenario]?.title || "자유 대화";
+            const levelDescription = currentLevel === 'beginner'
+                ? "초급(Beginner): 짧고 명확한 기초 스페인어 문장과 쉬운 어휘를 사용하세요. 한 번에 1~2문장으로 답하고 대화를 이어갈 쉬운 질문을 던지세요."
+                : "중급(Intermediate): 자연스러운 일상 구어체와 다양한 시제·연결어를 사용하여 실제 스페인 원어민처럼 대화하세요.";
+
+            const systemPrompt = `당신은 친절하고 유능한 스페인 원어민 스페인어 회화 튜터 '소피아(Sofía)'입니다.
+현재 롤플레이 상황: [${scenarioLabel}]
+학습자 난이도 설정: [${levelDescription}]
+
+규칙:
+1. 반드시 스페인어로 대화를 이어가세요(spanishReply). 사용자가 한국어를 섞어 말하거나 한국어로 질문해도 스페인어로 자연스럽게 반응하며 대화를 이끌어 주세요.
+2. koreanTranslation에는 spanishReply의 자연스러운 한국어 번역을 적으세요.
+3. 사용자가 보낸 스페인어 문장에 문법 오류, 철자 실수, 어색한 표현이 있거나 한국어가 섞여 있었다면, correctionTip에 한국어로 짧고 친절하게 올바른 스페인어 표현과 이유를 알려주세요. 사용자의 스페인어가 완벽하거나 단순 인사라면 correctionTip은 빈 문자열("")로 두세요.
+4. suggestedReplies에는 사용자가 다음 턴에 바로 따라 말할 수 있는 자연스러운 스페인어 답변 후보 3개(각각 spanish와 korean 포함)를 제안하세요.`;
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: chatConversation.slice(-12), // 최근 12턴 문맥 유지
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            spanishReply: { type: "STRING" },
+                            koreanTranslation: { type: "STRING" },
+                            correctionTip: { type: "STRING" },
+                            suggestedReplies: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        spanish: { type: "STRING" },
+                                        korean: { type: "STRING" }
+                                    },
+                                    required: ["spanish", "korean"]
+                                }
+                            }
+                        },
+                        required: ["spanishReply", "koreanTranslation", "correctionTip", "suggestedReplies"]
+                    }
+                }
+            };
+
+            try {
+                const result = await fetchGeminiWithRetry(apiUrl, payload);
+                const rawJsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (!rawJsonText) {
+                    throw new Error("AI 응답 데이터가 비어 있습니다.");
+                }
+
+                const parsed = JSON.parse(rawJsonText);
+
+                // 모델 응답 히스토리 저장
+                chatConversation.push({
+                    role: 'model',
+                    parts: [{ text: rawJsonText }]
+                });
+
+                removeAiTypingIndicator();
+                appendAiMessageBubble(parsed);
+
+                // 추천 답변 힌트 갱신
+                if (Array.isArray(parsed.suggestedReplies) && parsed.suggestedReplies.length > 0) {
+                    currentHints = parsed.suggestedReplies.map(item => ({
+                        es: item.spanish,
+                        ko: item.korean
+                    }));
+                    renderHints();
+                }
+
+                // 자동 음성 듣기 활성 시 스페인어 발음 재생
+                if (autoTtsToggle.checked && parsed.spanishReply) {
+                    speakSpanishWithRate(parsed.spanishReply, 1.0);
+                }
+
+            } catch (error) {
+                console.error("AI Tutor Error:", error);
+                removeAiTypingIndicator();
+                showToast("AI 튜터와 연결하는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.", 'error');
+            } finally {
+                isChatLoading = false;
+                sendChatBtn.disabled = false;
+                chatInputEl.focus();
+            }
+        }
+
+        /**
+         * 추천 답변 힌트 렌더링 및 토글
+         */
+        function renderHints() {
+            hintsListEl.innerHTML = currentHints.map(hint => `
+                <button 
+                    type="button" 
+                    onclick="useSuggestedHint('${escapeJsString(hint.es)}')"
+                    class="text-left bg-white hover:bg-indigo-600 border border-indigo-200/80 hover:border-indigo-600 rounded-xl p-2.5 transition-all group shadow-2xs cursor-pointer"
+                >
+                    <p class="text-xs font-bold text-slate-800 group-hover:text-white leading-snug mb-1">
+                        ${escapeHtml(hint.es)}
+                    </p>
+                    <p class="text-[11px] text-slate-500 group-hover:text-indigo-100 leading-tight">
+                        ${escapeHtml(hint.ko)}
+                    </p>
+                </button>
+            `).join('');
+        }
+
+        function toggleHintsDrawer(forceState = null) {
+            const shouldShow = forceState !== null ? forceState : hintsDrawer.classList.contains('hidden');
+            if (shouldShow) {
+                renderHints();
+                hintsDrawer.classList.remove('hidden');
+            } else {
+                hintsDrawer.classList.add('hidden');
+            }
+        }
+
+        function useSuggestedHint(spanishText) {
+            chatInputEl.value = spanishText;
+            toggleHintsDrawer(false);
+            chatInputEl.focus();
+            showToast('추천 답변이 입력되었습니다. Enter를 눌러 전송하세요!', 'info');
+        }
+
+        /**
+         * Web Speech API 음성 인식(STT) 초기화 및 제어 (es-ES)
+         */
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                micBtn.title = "이 브라우저는 음성 인식을 지원하지 않습니다 (Chrome/Edge 권장)";
+                micBtn.addEventListener('click', () => {
+                    showToast('현재 브라우저에서는 음성 인식을 지원하지 않습니다. Chrome 또는 Edge 브라우저를 이용해주세요.', 'error');
+                });
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES'; // 스페인어 음성 인식
+            recognition.interimResults = true;
+            recognition.continuous = false;
+
+            let baseTextBeforeSpeech = '';
+
+            recognition.onstart = () => {
+                isRecording = true;
+                baseTextBeforeSpeech = chatInputEl.value ? chatInputEl.value.trim() + ' ' : '';
+                micBtn.classList.remove('bg-slate-50', 'text-slate-600', 'border-slate-200');
+                micBtn.classList.add('bg-red-600', 'text-white', 'border-red-600', 'animate-pulse', 'shadow-md');
+                micIcon.className = 'fa-solid fa-stop text-base';
+                sttStatusBanner.classList.remove('hidden');
+                sttInterimText.textContent = '';
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (interimTranscript) {
+                    sttInterimText.textContent = `"${interimTranscript}"`;
+                    chatInputEl.value = baseTextBeforeSpeech + interimTranscript;
+                }
+
+                if (finalTranscript) {
+                    chatInputEl.value = (baseTextBeforeSpeech + finalTranscript).trim();
+                    sttInterimText.textContent = '';
+                }
+            };
+
+            recognition.onerror = (event) => {
+                if (event.error === 'not-allowed') {
+                    showToast('마이크 접근 권한이 거부되었습니다. 브라우저 설정에서 마이크를 허용해주세요.', 'error');
+                } else if (event.error === 'no-speech') {
+                    showToast('음성이 감지되지 않았습니다. 다시 시도해주세요.', 'info');
+                } else if (event.error !== 'aborted') {
+                    showToast('음성 인식 중 오류가 발생했습니다.', 'error');
+                }
+            };
+
+            recognition.onend = () => {
+                isRecording = false;
+                micBtn.classList.add('bg-slate-50', 'text-slate-600', 'border-slate-200');
+                micBtn.classList.remove('bg-red-600', 'text-white', 'border-red-600', 'animate-pulse', 'shadow-md');
+                micIcon.className = 'fa-solid fa-microphone text-base';
+                sttStatusBanner.classList.add('hidden');
+                chatInputEl.focus();
+            };
+
+            micBtn.addEventListener('click', () => {
+                if (isRecording) {
+                    recognition.stop();
+                } else {
+                    // TTS 재생 중이면 중지 후 녹음 시작
+                    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        recognition.stop();
+                    }
+                }
+            });
+
+            stopSttBtn.addEventListener('click', () => {
+                if (isRecording) recognition.stop();
+            });
+        }
+
+        /**
+         * AI 회화 탭 이벤트 바인딩 및 초기 실행
+         */
+        function initAiTutorChat() {
+            initSpeechRecognition();
+            startNewChatSession(false);
+
+            // 시나리오 변경 시 새 대화 시작
+            scenarioSelect.addEventListener('change', (e) => {
+                currentScenario = e.target.value;
+                startNewChatSession(true);
+                showToast(`'${SCENARIO_CONFIG[currentScenario].title}' 시나리오로 대화를 시작합니다.`, 'info');
+            });
+
+            // 난이도(초급/중급) 변경
+            levelBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    levelBtns.forEach(b => {
+                        b.classList.remove('bg-white', 'text-indigo-700', 'shadow-xs', 'font-bold');
+                        b.classList.add('text-slate-600', 'font-medium');
+                    });
+                    btn.classList.add('bg-white', 'text-indigo-700', 'shadow-xs', 'font-bold');
+                    btn.classList.remove('text-slate-600', 'font-medium');
+
+                    currentLevel = btn.dataset.level;
+                    const levelName = currentLevel === 'beginner' ? '초급' : '중급';
+                    showToast(`튜터 난이도가 [${levelName}]으로 설정되었습니다.`, 'info');
+                });
+            });
+
+            // 대화 초기화 버튼
+            resetChatBtn.addEventListener('click', () => {
+                startNewChatSession(true);
+                showToast('대화가 초기화되었습니다.');
+            });
+
+            // 추천 답변 힌트 토글 버튼
+            hintBtn.addEventListener('click', () => {
+                toggleHintsDrawer();
+            });
+
+            // 채팅 전송 버튼 및 Enter 키 처리
+            sendChatBtn.addEventListener('click', () => sendChatMessage());
+
+            chatInputEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                }
+            });
+
+            // 입력창 높이 자동 조절
+            chatInputEl.addEventListener('input', () => {
+                chatInputEl.style.height = 'auto';
+                chatInputEl.style.height = Math.min(chatInputEl.scrollHeight, 112) + 'px';
+            });
+        }
+
+        // =========================================================================
+        // [3번 탭] 스페인어 단어 퀴즈 게임 (Juego de Vocabulario) 로직
+        // =========================================================================
+
+        /**
+         * 카테고리별 필수 스페인어-한국어 단어 데이터셋 (총 115개)
+         */
+        const VOCAB_DATABASE = [
+            // 1. 인사 / 기본 표현 (greeting)
+            { es: "Hola", ko: "안녕 / 안녕하세요", category: "greeting" },
+            { es: "Buenos días", ko: "좋은 아침입니다", category: "greeting" },
+            { es: "Buenas tardes", ko: "좋은 오후입니다", category: "greeting" },
+            { es: "Buenas noches", ko: "좋은 밤 / 안녕히 주무세요", category: "greeting" },
+            { es: "Gracias", ko: "감사합니다", category: "greeting" },
+            { es: "Muchas gracias", ko: "대단히 감사합니다", category: "greeting" },
+            { es: "De nada", ko: "천만에요", category: "greeting" },
+            { es: "Por favor", ko: "부탁합니다 / 제발", category: "greeting" },
+            { es: "Lo siento", ko: "미안합니다 / 유감입니다", category: "greeting" },
+            { es: "Disculpe", ko: "실례합니다", category: "greeting" },
+            { es: "Mucho gusto", ko: "만나서 반갑습니다", category: "greeting" },
+            { es: "Adiós", ko: "안녕히 가세요 / 잘 가", category: "greeting" },
+            { es: "Hasta luego", ko: "나중에 봐요", category: "greeting" },
+            { es: "Hasta mañana", ko: "내일 봐요", category: "greeting" },
+            { es: "¿Cómo estás?", ko: "어떻게 지내니?", category: "greeting" },
+            { es: "Bienvenido", ko: "환영합니다", category: "greeting" },
+            { es: "Salud", ko: "건배 / 건강", category: "greeting" },
+            { es: "Claro que sí", ko: "물론이죠", category: "greeting" },
+            { es: "No entiendo", ko: "이해하지 못했어요", category: "greeting" },
+            { es: "¡Ayuda!", ko: "도와주세요!", category: "greeting" },
+
+            // 2. 음식 / 카페 (food)
+            { es: "Agua", ko: "물", category: "food" },
+            { es: "Café con leche", ko: "카페라떼 (우유 넣은 커피)", category: "food" },
+            { es: "Cerveza", ko: "맥주", category: "food" },
+            { es: "Vino tinto", ko: "레드 와인", category: "food" },
+            { es: "Pan", ko: "빵", category: "food" },
+            { es: "Carne", ko: "고기", category: "food" },
+            { es: "Pollo", ko: "닭고기", category: "food" },
+            { es: "Pescado", ko: "생선", category: "food" },
+            { es: "Mariscos", ko: "해산물", category: "food" },
+            { es: "Fruta", ko: "과일", category: "food" },
+            { es: "Manzana", ko: "사과", category: "food" },
+            { es: "Naranja", ko: "오렌지", category: "food" },
+            { es: "Leche", ko: "우유", category: "food" },
+            { es: "Queso", ko: "치즈", category: "food" },
+            { es: "Huevo", ko: "달걀", category: "food" },
+            { es: "Arroz", ko: "쌀 / 밥", category: "food" },
+            { es: "Desayuno", ko: "아침 식사", category: "food" },
+            { es: "Almuerzo", ko: "점심 식사", category: "food" },
+            { es: "Cena", ko: "저녁 식사", category: "food" },
+            { es: "La cuenta", ko: "계산서", category: "food" },
+            { es: "Delicioso", ko: "맛있는", category: "food" },
+            { es: "Picante", ko: "매운", category: "food" },
+            { es: "Azúcar", ko: "설탕", category: "food" },
+            { es: "Sal", ko: "소금", category: "food" },
+
+            // 3. 여행 / 교통 / 장소 (travel)
+            { es: "Aeropuerto", ko: "공항", category: "travel" },
+            { es: "Avión", ko: "비행기", category: "travel" },
+            { es: "Pasaporte", ko: "여권", category: "travel" },
+            { es: "Equipaje", ko: "수하물 / 짐", category: "travel" },
+            { es: "Estación de tren", ko: "기차역", category: "travel" },
+            { es: "Metro", ko: "지하철", category: "travel" },
+            { es: "Autobús", ko: "버스", category: "travel" },
+            { es: "Billete", ko: "표 / 티켓", category: "travel" },
+            { es: "Mapa", ko: "지도", category: "travel" },
+            { es: "Hotel", ko: "호텔", category: "travel" },
+            { es: "Reserva", ko: "예약", category: "travel" },
+            { es: "Playa", ko: "해변", category: "travel" },
+            { es: "Museo", ko: "박물관 / 미술관", category: "travel" },
+            { es: "Plaza", ko: "광장", category: "travel" },
+            { es: "Calle", ko: "거리 / 길", category: "travel" },
+            { es: "Hospital", ko: "병원", category: "travel" },
+            { es: "Farmacia", ko: "약국", category: "travel" },
+            { es: "Baño", ko: "화장실", category: "travel" },
+            { es: "Izquierda", ko: "왼쪽", category: "travel" },
+            { es: "Derecha", ko: "오른쪽", category: "travel" },
+            { es: "Todo recto", ko: "쭉 직진", category: "travel" },
+            { es: "Salida", ko: "출구", category: "travel" },
+            { es: "Entrada", ko: "입구", category: "travel" },
+
+            // 4. 쇼핑 / 숫자 / 시간 (shopping)
+            { es: "Dinero", ko: "돈", category: "shopping" },
+            { es: "Precio", ko: "가격", category: "shopping" },
+            { es: "Barato", ko: "저렴한 / 싼", category: "shopping" },
+            { es: "Caro", ko: "비싼", category: "shopping" },
+            { es: "Descuento", ko: "할인", category: "shopping" },
+            { es: "Tarjeta", ko: "카드", category: "shopping" },
+            { es: "Efectivo", ko: "현금", category: "shopping" },
+            { es: "Tienda", ko: "가게 / 상점", category: "shopping" },
+            { es: "Regalo", ko: "선물", category: "shopping" },
+            { es: "Ropa", ko: "옷 / 의류", category: "shopping" },
+            { es: "Zapatos", ko: "신발", category: "shopping" },
+            { es: "Talla", ko: "사이즈 / 치수", category: "shopping" },
+            { es: "Hoy", ko: "오늘", category: "shopping" },
+            { es: "Mañana", ko: "내일 / 아침", category: "shopping" },
+            { es: "Ayer", ko: "어제", category: "shopping" },
+            { es: "Ahora", ko: "지금", category: "shopping" },
+            { es: "Semana", ko: "주 (1주일)", category: "shopping" },
+            { es: "Fin de semana", ko: "주말", category: "shopping" },
+            { es: "Uno", ko: "숫자 1 (하나)", category: "shopping" },
+            { es: "Diez", ko: "숫자 10 (열)", category: "shopping" },
+            { es: "Cien", ko: "숫자 100 (백)", category: "shopping" },
+            { es: "Mil", ko: "숫자 1,000 (천)", category: "shopping" },
+
+            // 5. 일상 / 필수 동사·형용사 (daily)
+            { es: "Amigo", ko: "친구", category: "daily" },
+            { es: "Familia", ko: "가족", category: "daily" },
+            { es: "Amor", ko: "사랑", category: "daily" },
+            { es: "Tiempo", ko: "시간 / 날씨", category: "daily" },
+            { es: "Trabajo", ko: "일 / 직장", category: "daily" },
+            { es: "Libro", ko: "책", category: "daily" },
+            { es: "Música", ko: "음악", category: "daily" },
+            { es: "Película", ko: "영화", category: "daily" },
+            { es: "Teléfono", ko: "전화기 / 휴대폰", category: "daily" },
+            { es: "Casa", ko: "집", category: "daily" },
+            { es: "Hablar", ko: "말하다", category: "daily" },
+            { es: "Comer", ko: "먹다", category: "daily" },
+            { es: "Beber", ko: "마시다", category: "daily" },
+            { es: "Dormir", ko: "자다", category: "daily" },
+            { es: "Viajar", ko: "여행하다", category: "daily" },
+            { es: "Comprar", ko: "사다 / 구매하다", category: "daily" },
+            { es: "Aprender", ko: "배우다", category: "daily" },
+            { es: "Querer", ko: "원하다 / 사랑하다", category: "daily" },
+            { es: "Grande", ko: "큰", category: "daily" },
+            { es: "Pequeño", ko: "작은", category: "daily" },
+            { es: "Bueno", ko: "좋은", category: "daily" },
+            { es: "Nuevo", ko: "새로운", category: "daily" },
+            { es: "Feliz", ko: "행복한", category: "daily" },
+            { es: "Bonito", ko: "예쁜 / 아름다운", category: "daily" }
+        ];
+
+        const CATEGORY_LABELS = {
+            greeting: "인사 / 기본",
+            food: "음식 / 카페",
+            travel: "여행 / 교통",
+            shopping: "쇼핑 / 숫자",
+            daily: "일상 / 동사"
+        };
+
+        // 게임 상태 변수
+        let gameDirection = 'mixed'; // 'mixed' | 'es-to-ko' | 'ko-to-es'
+        let gameCategory = 'all';
+        let gameQuestions = [];
+        let currentQuestionIndex = 0;
+        let gameScore = 0;
+        let currentCombo = 0;
+        let maxCombo = 0;
+        let correctCount = 0;
+        let wrongAnswersList = [];
+        let isQuestionAnswered = false;
+        let isReviewWrongMode = false;
+
+        // 게임 DOM 요소
+        const gameDirectionSelect = document.getElementById('game-direction-select');
+        const gameCategorySelect = document.getElementById('game-category-select');
+        const gameComboBadge = document.getElementById('game-combo-badge');
+        const gameComboCount = document.getElementById('game-combo-count');
+        const gameScoreEl = document.getElementById('game-score');
+        const gameRestartBtn = document.getElementById('game-restart-btn');
+        const gameModeLabel = document.getElementById('game-mode-label');
+        const gameProgressText = document.getElementById('game-progress-text');
+        const gameProgressBar = document.getElementById('game-progress-bar');
+
+        const gamePlayArea = document.getElementById('game-play-area');
+        const questionDirectionBadge = document.getElementById('question-direction-badge');
+        const questionCategoryBadge = document.getElementById('question-category-badge');
+        const questionWordEl = document.getElementById('question-word');
+        const questionSubHintEl = document.getElementById('question-sub-hint');
+        const gameSpeakBtn = document.getElementById('game-speak-btn');
+        const gameSpeakLabel = document.getElementById('game-speak-label');
+        const gameSpeakSlowBtn = document.getElementById('game-speak-slow-btn');
+        const gameOptionsGrid = document.getElementById('game-options-grid');
+
+        const gameFeedbackBar = document.getElementById('game-feedback-bar');
+        const gameFeedbackIcon = document.getElementById('game-feedback-icon');
+        const gameFeedbackTitle = document.getElementById('game-feedback-title');
+        const gameFeedbackDetail = document.getElementById('game-feedback-detail');
+        const gameNextBtn = document.getElementById('game-next-btn');
+        const gameNextBtnText = document.getElementById('game-next-btn-text');
+
+        const gameResultArea = document.getElementById('game-result-area');
+        const resultEncouragement = document.getElementById('result-encouragement');
+        const resultTotalScore = document.getElementById('result-total-score');
+        const resultAccuracy = document.getElementById('result-accuracy');
+        const resultMaxCombo = document.getElementById('result-max-combo');
+        const retryWrongBtn = document.getElementById('retry-wrong-btn');
+        const wrongCountLabel = document.getElementById('wrong-count-label');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        const wrongWordsSection = document.getElementById('wrong-words-section');
+        const wrongWordsListEl = document.getElementById('wrong-words-list');
+
+        /**
+         * 배열 무작위 셔플 (Fisher-Yates 알고리즘)
+         */
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        /**
+         * 새 퀴즈 라운드 생성 및 시작 (customPool이 전달되면 오답 복습 모드)
+         */
+        function startVocabGame(customPool = null) {
+            isReviewWrongMode = Array.isArray(customPool) && customPool.length > 0;
+
+            let pool = isReviewWrongMode
+                ? [...customPool]
+                : (gameCategory === 'all'
+                    ? [...VOCAB_DATABASE]
+                    : VOCAB_DATABASE.filter(item => item.category === gameCategory));
+
+            // 문제 수 결정 (일반 라운드 10문제, 오답 복습은 틀린 개수만큼)
+            const questionLimit = isReviewWrongMode ? pool.length : Math.min(10, pool.length);
+            const selectedItems = shuffleArray(pool).slice(0, questionLimit);
+
+            // 각 문제별 출제 방향 및 4개의 객관식 보기 생성
+            gameQuestions = selectedItems.map(targetItem => {
+                const dir = gameDirection === 'mixed'
+                    ? (Math.random() < 0.5 ? 'es-to-ko' : 'ko-to-es')
+                    : gameDirection;
+
+                // 오답 보기 3개 추출 (동일 카테고리 우선, 부족하면 전체에서 보충)
+                let distractorPool = VOCAB_DATABASE.filter(
+                    w => w.es !== targetItem.es && w.ko !== targetItem.ko && w.category === targetItem.category
+                );
+                if (distractorPool.length < 3) {
+                    distractorPool = VOCAB_DATABASE.filter(
+                        w => w.es !== targetItem.es && w.ko !== targetItem.ko
+                    );
+                }
+
+                const distractors = shuffleArray(distractorPool).slice(0, 3);
+                const rawOptions = shuffleArray([targetItem, ...distractors]);
+
+                return {
+                    wordObj: targetItem,
+                    direction: dir, // 'es-to-ko' 또는 'ko-to-es'
+                    promptText: dir === 'es-to-ko' ? targetItem.es : targetItem.ko,
+                    correctAnswerText: dir === 'es-to-ko' ? targetItem.ko : targetItem.es,
+                    options: rawOptions.map(opt => ({
+                        text: dir === 'es-to-ko' ? opt.ko : opt.es,
+                        isCorrect: opt.es === targetItem.es
+                    }))
+                };
+            });
+
+            // 상태 초기화
+            currentQuestionIndex = 0;
+            gameScore = 0;
+            currentCombo = 0;
+            maxCombo = 0;
+            correctCount = 0;
+            wrongAnswersList = [];
+            isQuestionAnswered = false;
+
+            // UI 초기화
+            updateGameScoreboard();
+            gameModeLabel.textContent = isReviewWrongMode
+                ? `🔥 오답 복습 라운드 (${gameQuestions.length}문제)`
+                : `표준 ${gameQuestions.length}문제 라운드`;
+
+            gameResultArea.classList.add('hidden');
+            gamePlayArea.classList.remove('hidden');
+
+            renderCurrentQuestion();
+        }
+
+        /**
+         * 상단 점수 및 연속 정답 콤보 업데이트
+         */
+        function updateGameScoreboard() {
+            gameScoreEl.textContent = gameScore.toLocaleString();
+            if (currentCombo >= 2) {
+                gameComboBadge.classList.remove('hidden');
+                gameComboBadge.classList.add('inline-flex');
+                gameComboCount.textContent = currentCombo;
+            } else {
+                gameComboBadge.classList.add('hidden');
+                gameComboBadge.classList.remove('inline-flex');
+            }
+        }
+
+        /**
+         * 현재 문제 카드 및 4개 객관식 보기 렌더링
+         */
+        function renderCurrentQuestion() {
+            const q = gameQuestions[currentQuestionIndex];
+            if (!q) return;
+
+            isQuestionAnswered = false;
+            gameFeedbackBar.classList.add('hidden');
+
+            // 진행률 바 업데이트
+            const total = gameQuestions.length;
+            const currentNum = currentQuestionIndex + 1;
+            gameProgressText.textContent = `${currentNum} / ${total} 문제`;
+            gameProgressBar.style.width = `${Math.round((currentNum / total) * 100)}%`;
+
+            // 출제 방향 배지 및 안내 문구 설정
+            if (q.direction === 'es-to-ko') {
+                questionDirectionBadge.innerHTML = '🇪🇸 스페인어 → 🇰🇷 한국어';
+                questionDirectionBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200';
+                questionSubHintEl.textContent = '제시된 스페인어 단어의 알맞은 한국어 뜻을 고르세요';
+                gameSpeakLabel.textContent = '제시어 발음 듣기';
+            } else {
+                questionDirectionBadge.innerHTML = '🇰🇷 한국어 → 🇪🇸 스페인어';
+                questionDirectionBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200';
+                questionSubHintEl.textContent = '제시된 한국어 뜻에 해당하는 스페인어 단어를 고르세요';
+                gameSpeakLabel.textContent = '정답 스페인어 발음 듣기';
+            }
+
+            questionCategoryBadge.textContent = CATEGORY_LABELS[q.wordObj.category] || '필수 어휘';
+            questionWordEl.textContent = q.promptText;
+
+            // 4개 객관식 보기 버튼 렌더링
+            gameOptionsGrid.innerHTML = q.options.map((opt, idx) => `
+                <button 
+                    type="button" 
+                    data-option-index="${idx}"
+                    onclick="handleOptionSelect(${idx})"
+                    class="vocab-option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 bg-white hover:border-amber-400 hover:bg-amber-50/40 transition-all flex items-center justify-between gap-3 group cursor-pointer shadow-2xs"
+                >
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span class="option-num w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-amber-500 group-hover:text-white text-slate-600 text-xs font-bold flex items-center justify-center shrink-0 transition-colors">
+                            ${idx + 1}
+                        </span>
+                        <span class="text-sm sm:text-base font-bold text-slate-800 break-words">
+                            ${escapeHtml(opt.text)}
+                        </span>
+                    </div>
+                    <span class="option-status-icon shrink-0 text-base"></span>
+                </button>
+            `).join('');
+
+            // 스페인어가 문제로 출제된 경우 자동으로 발음 1회 재생 (탭이 활성화된 상태일 때만)
+            if (q.direction === 'es-to-ko' && !gameView.classList.contains('hidden')) {
+                speakSpanishWithRate(q.wordObj.es, 1.0);
+            }
+        }
+
+        /**
+         * 객관식 보기 선택 시 정답/오답 채점 및 즉시 피드백
+         */
+        function handleOptionSelect(selectedIndex) {
+            if (isQuestionAnswered) return;
+            const q = gameQuestions[currentQuestionIndex];
+            if (!q || !q.options[selectedIndex]) return;
+
+            isQuestionAnswered = true;
+            const selectedOption = q.options[selectedIndex];
+            const isCorrect = selectedOption.isCorrect;
+            const optionBtns = gameOptionsGrid.querySelectorAll('.vocab-option-btn');
+
+            // 모든 보기 버튼 스타일 업데이트 (정답 초록색 / 선택한 오답 빨간색)
+            optionBtns.forEach((btn, idx) => {
+                btn.disabled = true;
+                btn.classList.remove('hover:border-amber-400', 'hover:bg-amber-50/40', 'cursor-pointer');
+                const opt = q.options[idx];
+                const numBadge = btn.querySelector('.option-num');
+                const iconSpan = btn.querySelector('.option-status-icon');
+
+                if (opt.isCorrect) {
+                    btn.classList.remove('border-slate-200', 'bg-white');
+                    btn.classList.add('border-emerald-500', 'bg-emerald-50');
+                    numBadge.className = 'option-num w-7 h-7 rounded-lg bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0';
+                    iconSpan.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i>';
+                } else if (idx === selectedIndex && !isCorrect) {
+                    btn.classList.remove('border-slate-200', 'bg-white');
+                    btn.classList.add('border-red-500', 'bg-red-50');
+                    numBadge.className = 'option-num w-7 h-7 rounded-lg bg-red-600 text-white text-xs font-bold flex items-center justify-center shrink-0';
+                    iconSpan.innerHTML = '<i class="fa-solid fa-circle-xmark text-red-600"></i>';
+                } else {
+                    btn.classList.add('opacity-55');
+                }
+            });
+
+            // 점수 및 콤보 계산
+            if (isCorrect) {
+                correctCount++;
+                currentCombo++;
+                if (currentCombo > maxCombo) maxCombo = currentCombo;
+                const comboBonus = currentCombo >= 2 ? (currentCombo - 1) * 20 : 0;
+                const earned = 100 + comboBonus;
+                gameScore += earned;
+
+                gameFeedbackBar.className = 'mt-6 p-4 rounded-2xl border border-emerald-200 bg-emerald-50/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all';
+                gameFeedbackIcon.className = 'w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shrink-0';
+                gameFeedbackIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+                gameFeedbackTitle.className = 'text-sm font-bold text-emerald-900';
+                gameFeedbackTitle.textContent = comboBonus > 0
+                    ? `정답입니다! (+${earned}점 · ${currentCombo}연속 콤보 보너스!)`
+                    : `정답입니다! (+${earned}점)`;
+                gameFeedbackDetail.className = 'text-xs text-emerald-700 mt-0.5';
+                gameFeedbackDetail.textContent = `${q.wordObj.es} = ${q.wordObj.ko}`;
+            } else {
+                currentCombo = 0;
+                // 중복 없이 오답 노트에 기록
+                if (!wrongAnswersList.some(item => item.es === q.wordObj.es)) {
+                    wrongAnswersList.push(q.wordObj);
+                }
+
+                gameFeedbackBar.className = 'mt-6 p-4 rounded-2xl border border-red-200 bg-red-50/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all';
+                gameFeedbackIcon.className = 'w-9 h-9 rounded-xl bg-red-600 flex items-center justify-center text-white shrink-0';
+                gameFeedbackIcon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                gameFeedbackTitle.className = 'text-sm font-bold text-red-900';
+                gameFeedbackTitle.textContent = `아쉬워요! 정답은 "${q.correctAnswerText}" 입니다.`;
+                gameFeedbackDetail.className = 'text-xs text-red-700 mt-0.5';
+                gameFeedbackDetail.textContent = `${q.wordObj.es} = ${q.wordObj.ko}`;
+            }
+
+            updateGameScoreboard();
+
+            // 다음 버튼 라벨 업데이트
+            const isLast = currentQuestionIndex >= gameQuestions.length - 1;
+            gameNextBtnText.textContent = isLast ? '결과 확인하기' : '다음 문제';
+
+            // 정답 확인 직후 스페인어 원어민 발음 자동 재생 (복습 효과 극대화)
+            speakSpanishWithRate(q.wordObj.es, 1.0);
+        }
+
+        /**
+         * 다음 문제로 이동하거나 라운드 결과 화면 표시
+         */
+        function goToNextQuestion() {
+            if (!isQuestionAnswered) return;
+
+            if (currentQuestionIndex < gameQuestions.length - 1) {
+                currentQuestionIndex++;
+                renderCurrentQuestion();
+            } else {
+                showGameResults();
+            }
+        }
+
+        /**
+         * 라운드 완료 결과 요약 및 오답 복습 목록 표시
+         */
+        function showGameResults() {
+            gamePlayArea.classList.add('hidden');
+            gameResultArea.classList.remove('hidden');
+
+            const total = gameQuestions.length;
+            const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+
+            resultTotalScore.textContent = `${gameScore.toLocaleString()}점`;
+            resultAccuracy.textContent = `${accuracy}% (${correctCount}/${total})`;
+            resultMaxCombo.textContent = `${maxCombo}연속`;
+
+            if (accuracy === 100) {
+                resultEncouragement.textContent = "완벽해요! 모든 스페인어 단어를 정확하게 맞혔습니다! 🎉";
+            } else if (accuracy >= 70) {
+                resultEncouragement.textContent = "아주 잘했어요! 틀린 단어만 한 번 더 복습하면 완벽해질 거예요.";
+            } else {
+                resultEncouragement.textContent = "좋은 연습이었어요! 아래 오답 노트에서 발음을 들으며 다시 도전해보세요.";
+            }
+
+            // 오답이 있을 경우 오답 복습 버튼 및 오답 리스트 렌더링
+            if (wrongAnswersList.length > 0) {
+                retryWrongBtn.classList.remove('hidden');
+                retryWrongBtn.classList.add('inline-flex');
+                wrongCountLabel.textContent = wrongAnswersList.length;
+
+                wrongWordsSection.classList.remove('hidden');
+                wrongWordsListEl.innerHTML = wrongAnswersList.map(item => `
+                    <div class="bg-red-50/50 border border-red-200/80 rounded-xl p-3.5 flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-bold text-slate-900 truncate">${escapeHtml(item.es)}</p>
+                            <p class="text-xs text-slate-600 mt-0.5 truncate">${escapeHtml(item.ko)}</p>
+                        </div>
+                        <button 
+                            type="button" 
+                            onclick="speakSpanishWithRate('${escapeJsString(item.es)}', 1.0)"
+                            title="스페인어 발음 듣기"
+                            class="w-9 h-9 rounded-xl bg-white hover:bg-red-600 border border-red-200 text-red-600 hover:text-white transition-all flex items-center justify-center shrink-0 cursor-pointer"
+                        >
+                            <i class="fa-solid fa-volume-high text-xs"></i>
+                        </button>
+                    </div>
+                `).join('');
+            } else {
+                retryWrongBtn.classList.add('hidden');
+                retryWrongBtn.classList.remove('inline-flex');
+                wrongWordsSection.classList.add('hidden');
+            }
+        }
+
+        /**
+         * 단어 퀴즈 게임 이벤트 리스너 초기화
+         */
+        function initVocabGame() {
+            // 출제 방향 변경
+            gameDirectionSelect.addEventListener('change', (e) => {
+                gameDirection = e.target.value;
+                startVocabGame();
+            });
+
+            // 카테고리 변경
+            gameCategorySelect.addEventListener('change', (e) => {
+                gameCategory = e.target.value;
+                startVocabGame();
+            });
+
+            // 새 게임 버튼
+            gameRestartBtn.addEventListener('click', () => {
+                startVocabGame();
+                showToast('새로운 단어 퀴즈 라운드가 시작되었습니다!', 'info');
+            });
+
+            // 제시어/정답 스페인어 발음 듣기 (1.0x / 0.7x)
+            gameSpeakBtn.addEventListener('click', () => {
+                const q = gameQuestions[currentQuestionIndex];
+                if (q) speakSpanishWithRate(q.wordObj.es, 1.0);
+            });
+
+            gameSpeakSlowBtn.addEventListener('click', () => {
+                const q = gameQuestions[currentQuestionIndex];
+                if (q) speakSpanishWithRate(q.wordObj.es, 0.7);
+            });
+
+            // 다음 문제 버튼
+            gameNextBtn.addEventListener('click', goToNextQuestion);
+
+            // 결과 화면: 틀린 단어만 다시 풀기 / 새 게임 시작
+            retryWrongBtn.addEventListener('click', () => {
+                if (wrongAnswersList.length > 0) {
+                    startVocabGame([...wrongAnswersList]);
+                    showToast(`틀린 단어 ${wrongAnswersList.length}개 복습을 시작합니다!`, 'info');
+                }
+            });
+
+            playAgainBtn.addEventListener('click', () => {
+                startVocabGame();
+            });
+
+            // 키보드 단축키 지원 (단어 게임 탭이 열려 있을 때 1~4번 선택, Enter/Space 다음 문제)
+            document.addEventListener('keydown', (e) => {
+                if (gameView.classList.contains('hidden')) return;
+                if (!gameResultArea.classList.contains('hidden')) return;
+
+                if (!isQuestionAnswered && ['1', '2', '3', '4'].includes(e.key)) {
+                    e.preventDefault();
+                    handleOptionSelect(parseInt(e.key, 10) - 1);
+                } else if (isQuestionAnswered && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    goToNextQuestion();
+                }
+            });
+
+            // 초기 게임 데이터 세팅
+            startVocabGame();
+        }
+    </script>
+</body>
+</html>
